@@ -33,11 +33,15 @@ docker build --target exporter --output dist .
 
 ## Installing
 
-For the simplest install simply run:
+For python>3.11 or if you wish to use hunspell==1.7.3 you have to build from source before installing, as packages are no longer available on pypi.
+The previous sections shows how to build with docker, and should be easily modifiable to higher python versions.
+After having exported the wheel you can simple run:
 
-    pip install .
+```bash
+python3 -m pip install dist/cyhunspell-2.0.5-*
+```
 
-This will install the hunspell 1.7.3 C++ bindings on your behalf for your platform.
+
 
 ## Dependencies
 
