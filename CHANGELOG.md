@@ -1,3 +1,7 @@
+# 2.0.4
+- Rebuilt with python 3.12. 
+- Update to Cython>=3.2.4
+
 # 2.0.3
 - Rebuilt with python 3.10 tested
 
