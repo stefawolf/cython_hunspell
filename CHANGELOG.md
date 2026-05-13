@@ -1,3 +1,6 @@
+# 2.0.5
+- Updated bundled hunspell from 1.7.0 to 1.7.3
+
 # 2.0.4
 - Rebuilt with python 3.12. 
 - Update to Cython>=3.2.4

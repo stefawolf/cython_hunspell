@@ -20,9 +20,9 @@ in-memory caching.
 
 For the simplest install simply run:
 
-    pip install cyhunspell
+    pip install .
 
-This will install the hunspell 1.7.0 C++ bindings on your behalf for your platform.
+This will install the hunspell 1.7.3 C++ bindings on your behalf for your platform.
 
 ## Dependencies
 
@@ -32,7 +32,7 @@ cacheman -- for (optionally asynchronous) persistent caching
 
 ### hunspell
 
-The library installs [hunspell](http://hunspell.github.io/) version 1.7.0. As new version of hunspell become
+The library installs [hunspell](http://hunspell.github.io/) version 1.7.3. As new version of hunspell become
 available this library will provide new versions to match.
 
 ## Features
