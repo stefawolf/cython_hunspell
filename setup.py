@@ -5,7 +5,10 @@ import shutil
 import platform
 from warnings import warn
 from setuptools import setup, find_packages, Extension
-from distutils.command.build import build
+try:
+    from setuptools.command.build import build
+except ImportError:
+    from distutils.command.build import build
 from build_hunspell import pkgconfig, repair_darwin_link_dep_path
 from collections import defaultdict
 

@@ -11,7 +11,10 @@ import sys
 import shutil
 from subprocess import Popen, PIPE
 from tar_download import download_and_extract
-from distutils.sysconfig import get_python_lib
+try:
+    from setuptools._distutils.sysconfig import get_python_lib
+except ImportError:
+    from distutils.sysconfig import get_python_lib
 from subprocess import getstatusoutput
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
