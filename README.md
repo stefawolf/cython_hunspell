@@ -16,6 +16,21 @@ The hunspell library will cache any corrections, you can use persistent caching 
 adding the `use_disk_cache` argument to a Hunspell constructor. Otherwise it uses
 in-memory caching.
 
+## Building and testing
+
+(Dockerfile)[Dockerfile] provides automatic build and test for python3.12:
+
+For test:
+
+```bash
+docker build --target tester -t cyhunspell-test .
+docker run --rm cyhunspell-test
+```
+For exporting a wheel:
+```bash
+docker build --target exporter --output dist .
+```
+
 ## Installing
 
 For the simplest install simply run:
