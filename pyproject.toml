@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+build = "cp310-* cp311-* cp312-* cp313-*"
+skip = "*-win32 *-manylinux_i686 *-musllinux*"
+# Pre-generate the C++ source from Cython before each build, matching the Dockerfile approach
+before-build = "pip install 'cython>=3.0,<4.0' && python -m cython --cplus hunspell/hunspell.pyx"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64", "aarch64"]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+before-all = "yum install -y autoconf automake libtool gettext-devel gcc-c++"
+# gcc-toolset-14 is first in PATH in the manylinux_2_28 image and produces libstdc++
+# symbols newer than the manylinux_2_28 policy allows. Force the system GCC 8.5 instead.
+environment = { CC = "/usr/bin/gcc", CXX = "/usr/bin/g++" }
+
+[tool.cibuildwheel.macos]
+# gettext is keg-only in brew; --force makes autopoint available in PATH
+before-all = "brew install autoconf automake libtool gettext && brew link gettext --force"
