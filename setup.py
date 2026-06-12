@@ -4,6 +4,7 @@ import glob
 import shutil
 import platform
 from warnings import warn
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from setuptools import setup, find_packages, Extension
 try:
     from setuptools.command.build import build
