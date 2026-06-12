@@ -74,7 +74,7 @@ def build_hunspell_package(directory, force_build=False):
                     f.write(patched)
             run_proc_delay_print('autoreconf', '-vfi')
             run_proc_delay_print('./configure', '--prefix='+build_path, '--disable-nls',
-                                 'CFLAGS=-fPIC', 'CXXFLAGS=-fPIC')
+                                 'CFLAGS=-fPIC -O2', 'CXXFLAGS=-fPIC -O2')
             run_proc_delay_print('make')
             run_proc_delay_print('make', 'install')
         finally:
