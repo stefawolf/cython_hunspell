@@ -16,29 +16,32 @@ The hunspell library will cache any corrections, you can use persistent caching 
 adding the `use_disk_cache` argument to a Hunspell constructor. Otherwise it uses
 in-memory caching.
 
-## Building and testing
+## Building wheels
 
-(Dockerfile)[Dockerfile] provides automatic build and test for python3.12:
+Wheels are built using [cibuildwheel](https://cibuildwheel.pypa.io), targeting CPython 3.10–3.13 on Linux (manylinux_2_28, x86_64 and aarch64) and macOS.
 
-For test:
+Install cibuildwheel and build for your current platform:
 
 ```bash
-docker build --target tester -t cyhunspell-test .
-docker run --rm cyhunspell-test
+pip install cibuildwheel
+python -m cibuildwheel --platform linux   # or: --platform macos
 ```
-For exporting a wheel:
+
+To build aarch64 on an x86_64 machine, set up QEMU first:
+
 ```bash
-docker build --target exporter --output dist .
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+python -m cibuildwheel --platform linux
 ```
+
+Built wheels are placed in `wheelhouse/`.
 
 ## Installing
 
-For python>3.11 or if you wish to use hunspell==1.7.3 you have to build from source before installing, as packages are no longer available on pypi.
-The previous sections shows how to build with docker, and should be easily modifiable to higher python versions.
-After having exported the wheel you can simple run:
+Install directly from a built wheel:
 
 ```bash
-python3 -m pip install dist/cyhunspell-2.0.5-*
+pip install wheelhouse/cyhunspell-*.whl
 ```
 
 
