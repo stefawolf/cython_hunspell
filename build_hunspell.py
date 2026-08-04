@@ -18,11 +18,13 @@ except ImportError:
 from subprocess import getstatusoutput
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+HUNSPELL_VERSION = os.environ.get('HUNSPELL_VERSION') or '1.7.0'
+HUNSPELL_MINOR = '.'.join(HUNSPELL_VERSION.split('.')[:2])  # e.g. '1.7'
 
 def include_dirs():
     return [
         os.path.abspath(os.path.join(BASE_DIR, 'hunspell')),
-        os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.3', 'src')),
+        os.path.abspath(os.path.join(BASE_DIR, 'external', 'hunspell-' + HUNSPELL_VERSION, 'src')),
     ]
 
 def run_proc_delay_print(*args):
@@ -47,12 +49,12 @@ def build_hunspell_package(directory, force_build=False):
     if platform.system() == 'Linux':
         # Use the static library so the wheel is self-contained and auditwheel-compatible.
         # The autotools build produces both .so and .a; we only need the .a here.
-        static_lib_path = os.path.join(lib_path, 'libhunspell-1.7.a')
+        static_lib_path = os.path.join(lib_path, 'libhunspell-{}.a'.format(HUNSPELL_MINOR))
         already_built = os.path.exists(static_lib_path)
     else:  # OSX
         hunspell_so_dir = os.path.join(BASE_DIR, 'hunspell')
-        hunspell_library_name = 'libhunspell-1.7.3.dylib'
-        build_lib_path = os.path.join(lib_path, 'libhunspell-1.7.3.dylib')
+        hunspell_library_name = 'libhunspell-{}.dylib'.format(HUNSPELL_MINOR)
+        build_lib_path = os.path.join(lib_path, 'libhunspell-{}.dylib'.format(HUNSPELL_MINOR))
         hunspell_so_path = os.path.join(hunspell_so_dir, hunspell_library_name)
         already_built = os.path.exists(hunspell_so_path)
 
@@ -73,8 +75,18 @@ def build_hunspell_package(directory, force_build=False):
                 with open(configure_ac, 'w') as f:
                     f.write(patched)
             run_proc_delay_print('autoreconf', '-vfi')
+            # Prefer gcc-toolset-14 for compiling hunspell (faster code, better
+            # optimisation). The Python extension wrapper is compiled separately
+            # by the CC/CXX set in the cibuildwheel environment (system GCC 8.5),
+            # which keeps the final .so within the manylinux_2_28 ABI limits.
+            # Fall back to whatever CC/CXX is active if toolset is absent.
+            _gcc14 = '/opt/rh/gcc-toolset-14/root/usr/bin/gcc'
+            _gxx14 = '/opt/rh/gcc-toolset-14/root/usr/bin/g++'
+            _cc  = _gcc14 if os.path.exists(_gcc14) else os.environ.get('CC', 'gcc')
+            _cxx = _gxx14 if os.path.exists(_gxx14) else os.environ.get('CXX', 'g++')
             run_proc_delay_print('./configure', '--prefix='+build_path, '--disable-nls',
-                                 'CFLAGS=-fPIC -O2', 'CXXFLAGS=-fPIC -O2')
+                                 'CC=' + _cc, 'CXX=' + _cxx,
+                                 'CFLAGS=-fPIC -O3', 'CXXFLAGS=-fPIC -O3')
             run_proc_delay_print('make')
             run_proc_delay_print('make', 'install')
         finally:
@@ -93,7 +105,7 @@ def build_hunspell_package(directory, force_build=False):
     if platform.system() == 'Linux':
         return static_lib_path, lib_path
     else:
-        return 'hunspell-1.7.3', hunspell_so_dir
+        return 'hunspell-{}'.format(HUNSPELL_MINOR), hunspell_so_dir
 
 def pkgconfig(**kw):
     kw['include_dirs'] = include_dirs()
@@ -110,9 +122,10 @@ def pkgconfig(**kw):
     #     for filename in os.listdir(os.path.join(BASE_DIR, 'libs', 'msvc')):
     #         shutil.copyfile(os.path.join(BASE_DIR, 'libs', 'msvc', filename), os.path.join(BASE_DIR, 'hunspell', filename))
 
-    if not os.path.exists(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.3')):
+    if not os.path.exists(os.path.join(BASE_DIR, 'external', 'hunspell-' + HUNSPELL_VERSION)):
         # Prepare for hunspell if it's missing
-        download_and_extract('https://github.com/hunspell/hunspell/archive/v1.7.3.tar.gz',
+        download_and_extract(
+            'https://github.com/hunspell/hunspell/archive/v{}.tar.gz'.format(HUNSPELL_VERSION),
             os.path.join(BASE_DIR, 'external'))
         kw['include_dirs'] = include_dirs()
 
@@ -125,7 +138,8 @@ def pkgconfig(**kw):
         force_build = os.environ.get('CYHUNSPELL_FORCE_BUILD', False)
         if force_build == '0' or force_build == 0:
             force_build = False
-        lib_name, lib_path = build_hunspell_package(os.path.join(BASE_DIR, 'external', 'hunspell-1.7.3'), force_build)
+        lib_name, lib_path = build_hunspell_package(
+            os.path.join(BASE_DIR, 'external', 'hunspell-' + HUNSPELL_VERSION), force_build)
         if platform.system() == 'Linux':
             # lib_name is the path to libhunspell-1.7.a; statically link it into the extension
             kw['extra_objects'] = [lib_name]
@@ -146,7 +160,8 @@ def get_build_dir():
 
 def repair_darwin_link_dep_path():
     # Needed for darwin generated SO files to correctly look in the @loader_path for shared dependencies
-    build_hunspell_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib', 'libhunspell-1.7.3.dylib')
+    build_hunspell_lib_path = os.path.join(BASE_DIR, 'external', 'build', 'lib',
+                                           'libhunspell-{}.dylib'.format(HUNSPELL_MINOR))
     for lib_path in (
             list(glob.glob(os.path.join(BASE_DIR, 'hunspell', '**', '*.so'), recursive=True)) +
             list(glob.glob(os.path.join(get_build_dir(), '**', '*.so'), recursive=True)
@@ -160,7 +175,8 @@ def repair_darwin_link_dep_path():
         run_proc_delay_print('otool', '-L', lib_path)
 
         run_proc_delay_print('install_name_tool', '-id', '@loader_path/{}'.format(lib_name), lib_path)
-        run_proc_delay_print('install_name_tool', '-change', build_hunspell_lib_path, '@loader_path/libhunspell-1.7.3.dylib', lib_path)
+        run_proc_delay_print('install_name_tool', '-change', build_hunspell_lib_path,
+                             '@loader_path/libhunspell-{}.dylib'.format(HUNSPELL_MINOR), lib_path)
 
         print("Changed lib '{}' id:".format(lib_name))
         run_proc_delay_print('otool', '-D', lib_path)
@@ -180,7 +196,8 @@ def repair_darwin_link_dep_path():
         run_proc_delay_print('otool', '-L', lib_path)
 
         run_proc_delay_print('install_name_tool', '-id', '@loader_path/{}'.format(lib_name), lib_path)
-        run_proc_delay_print('install_name_tool', '-change', build_hunspell_lib_path, '@loader_path/libhunspell-1.7.3.dylib', lib_path)
+        run_proc_delay_print('install_name_tool', '-change', build_hunspell_lib_path,
+                             '@loader_path/libhunspell-{}.dylib'.format(HUNSPELL_MINOR), lib_path)
 
         print("Changed lib '{}' id:".format(lib_name))
         run_proc_delay_print('otool', '-D', lib_path)

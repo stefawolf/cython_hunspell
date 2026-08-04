@@ -36,6 +36,30 @@ python -m cibuildwheel --platform linux
 
 Built wheels are placed in `wheelhouse/`.
 
+### Building against a different hunspell version
+
+By default the build uses hunspell 1.7.0. To build against a different version, set
+the `HUNSPELL_VERSION` environment variable before building:
+
+```bash
+HUNSPELL_VERSION=1.7.2 python -m cibuildwheel --platform linux
+```
+
+The hunspell version is embedded as a build tag in the resulting wheel filename, e.g.
+`cyhunspell-2.0.6-172-cp312-cp312-manylinux_2_28_x86_64.whl`, where `172` is `1.7.2`
+with the dots removed.
+
+#### Building every supported version at once
+
+`build_all_hunspell_versions.sh` builds wheels for hunspell 1.7.0 through 1.7.3 in one run:
+
+```bash
+./build_all_hunspell_versions.sh              # Linux (default)
+./build_all_hunspell_versions.sh macos        # macOS
+./build_all_hunspell_versions.sh linux x86_64 # specific arch
+```
+
+
 ## Installing
 
 Install directly from a built wheel:
@@ -54,8 +78,10 @@ cacheman -- for (optionally asynchronous) persistent caching
 
 ### hunspell
 
-The library installs [hunspell](http://hunspell.github.io/) version 1.7.3. As new version of hunspell become
-available this library will provide new versions to match.
+The library installs [hunspell](http://hunspell.github.io/) version 1.7.0 by default. See
+[Building against a different hunspell version](#building-against-a-different-hunspell-version)
+for building against 1.7.1, 1.7.2, or 1.7.3 instead.
+Version 1.7.0 is chosen because of observed degraded performance for spelling suggestions on scandinavian languages.
 
 ## Features
 

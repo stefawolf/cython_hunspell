@@ -19,8 +19,13 @@ try:
     class bdist_wheel(_bdist_wheel):
         def finalize_options(self):
             _bdist_wheel.finalize_options(self)
-            # Mark us as not a pure python package
             self.root_is_pure = False
+            # When HUNSPELL_VERSION is set (e.g. by build_all_hunspell_versions.sh),
+            # embed it as a build tag so it appears in the wheel filename:
+            # cyhunspell-2.0.6-172-cp312-cp312-manylinux_2_28_x86_64.whl
+            hunspell_ver = (os.environ.get('HUNSPELL_VERSION') or '').strip()
+            if hunspell_ver:
+                self.build_number = hunspell_ver.replace('.', '')
 except ImportError:
     print("Could not register bdist_wheel. Make sure the wheel package is installed!")
     bdist_wheel = None

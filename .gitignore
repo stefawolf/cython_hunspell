@@ -71,4 +71,4 @@ hunspell/libhunspell-msvc14-x64.lib
 hunspell/libhunspell-msvc14-x86.lib
 
 #virtual environment
-.venv
+.venv*

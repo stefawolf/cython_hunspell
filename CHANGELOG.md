@@ -1,3 +1,9 @@
+# 2.0.6-l1.7.0'
+ Revert to use bundled hunspell 1.7.0 because of degraded correction performance with 1.7.3
+
+# 2.0.6
+ Support of multilinux built
+
 # 2.0.5
 - Updated bundled hunspell from 1.7.0 to 1.7.3
 
