@@ -29,12 +29,17 @@ pip install cibuildwheel
 python -m cibuildwheel --platform linux   # or: --platform macos
 ```
 
-To build aarch64 on an x86_64 machine, set up QEMU first:
+To build aarch64 on an x86_64 machine, register the QEMU emulators with Docker first:
 
 ```bash
-docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+docker run --rm --privileged tonistiigi/binfmt --install all
 python -m cibuildwheel --platform linux
 ```
+
+Without this, the aarch64 build fails with `exec format error` when Docker tries to run the
+manylinux_aarch64 container's entrypoint. This registration is not persistent across reboots
+(or WSL2 restarts), so re-run it whenever `docker run --rm --privileged tonistiigi/binfmt` reports
+no emulators installed.
 
 Built wheels are placed in `wheelhouse/`.
 
