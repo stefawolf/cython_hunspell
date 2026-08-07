@@ -23,6 +23,8 @@ Wheels are built using [cibuildwheel](https://cibuildwheel.pypa.io), targeting C
 Install cibuildwheel and build for your current platform:
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install cibuildwheel
 python -m cibuildwheel --platform linux   # or: --platform macos
 ```
@@ -65,6 +67,8 @@ with the dots removed.
 Install directly from a built wheel:
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install wheelhouse/cyhunspell-*.whl
 ```
 
