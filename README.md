@@ -48,7 +48,7 @@ HUNSPELL_VERSION=1.7.2 python -m cibuildwheel --platform linux
 ```
 
 The hunspell version is embedded as a build tag in the resulting wheel filename, e.g.
-`cyhunspell-2.0.6-172-cp312-cp312-manylinux_2_28_x86_64.whl`, where `172` is `1.7.2`
+`cyhunspell-2.0.8.172-cp312-cp312-manylinux_2_28_x86_64.whl`, where `172` is `1.7.2`
 with the dots removed.
 
 #### Building every supported version at once
