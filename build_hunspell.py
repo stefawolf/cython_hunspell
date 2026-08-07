@@ -75,15 +75,15 @@ def build_hunspell_package(directory, force_build=False):
                 with open(configure_ac, 'w') as f:
                     f.write(patched)
             run_proc_delay_print('autoreconf', '-vfi')
-            # Prefer gcc-toolset-14 for compiling hunspell (faster code, better
-            # optimisation). The Python extension wrapper is compiled separately
-            # by the CC/CXX set in the cibuildwheel environment (system GCC 8.5),
-            # which keeps the final .so within the manylinux_2_28 ABI limits.
-            # Fall back to whatever CC/CXX is active if toolset is absent.
-            _gcc14 = '/opt/rh/gcc-toolset-14/root/usr/bin/gcc'
-            _gxx14 = '/opt/rh/gcc-toolset-14/root/usr/bin/g++'
-            _cc  = _gcc14 if os.path.exists(_gcc14) else os.environ.get('CC', 'gcc')
-            _cxx = _gxx14 if os.path.exists(_gxx14) else os.environ.get('CXX', 'g++')
+            # Use the same CC/CXX as the Python extension wrapper (system GCC
+            # in the cibuildwheel environment). This static library gets linked
+            # directly into the final .so, so it must share the wrapper's ABI
+            # baseline - a newer compiler (e.g. gcc-toolset-14, present in the
+            # manylinux_2_28 image) produces libstdc++ symbols newer than the
+            # manylinux_2_28 policy allows, breaking the wheel on older systems
+            # even though the build itself succeeds.
+            _cc = os.environ.get('CC', 'gcc')
+            _cxx = os.environ.get('CXX', 'g++')
             run_proc_delay_print('./configure', '--prefix='+build_path, '--disable-nls',
                                  'CC=' + _cc, 'CXX=' + _cxx,
                                  'CFLAGS=-fPIC -O3', 'CXXFLAGS=-fPIC -O3')
