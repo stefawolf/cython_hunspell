@@ -18,6 +18,13 @@
 
 set -euo pipefail
 
+if ! python -c "import cibuildwheel" >/dev/null 2>&1; then
+    echo "error: cibuildwheel is not importable by 'python' ($(command -v python || echo 'not found'))." >&2
+    echo "Activate your virtualenv and install it first, e.g.:" >&2
+    echo "  python -m venv .venv && source .venv/bin/activate && pip install cibuildwheel" >&2
+    exit 1
+fi
+
 PLATFORM="${1:-linux}"
 ARCHS="${2:-}"
 
